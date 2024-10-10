@@ -10,16 +10,16 @@ def escalar_img(image, scale):
     w=image.get_width()
     h=image.get_height()
     nueva_imagen=pygame.transform.scale(image, (w*scale, h*scale))
+    return nueva_imagen
 
 animaciones=[]
 for i in range (7):
     img=pygame.image.load(f"assets//images//characters//player//Player_{i}.png")
+    img =escalar_img(img, Constantes.SCALA_PERSONAJE)
+    animaciones.append(img)
 
-player_image=pygame.image.load("assets//images//characters//player//Player_0.png")
-player_image=escalar_img(player_image, Constantes.SCALA_PERSONAJE)
 
-
-jugador=Personaje(50,50,player_image)
+jugador=Personaje(50,50,animaciones)
 
 
 
@@ -59,6 +59,8 @@ while run==True:
     
     #Mover al jugador
     jugador.movimiento(delta_x, delta_y)
+
+    jugador.update()
 
 
     jugador.dibujar(ventana)
