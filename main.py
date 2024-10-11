@@ -27,12 +27,19 @@ for i in range (7):
 imagen_pistola=pygame.image.load(f"assets//images//weapons//gun.png").convert_alpha()
 imagen_pistola=escalar_img(imagen_pistola, Constantes.SCALA_ARMA)
 
+#Balas
+imagen_balas=pygame.image.load(f"assets//images//weapons//bullet.png").convert_alpha()
+imagen_balas=escalar_img(imagen_balas, Constantes.SCALA_ARMA)
+
 
 #crear un jugador de la clase personaje
 jugador=Personaje(50,50,animaciones)
 
 #Crear un arma de la clase weapon
-pistola=Weapon(imagen_pistola)
+pistola=Weapon(imagen_pistola, imagen_balas)
+
+#Crear un grupo de sprites
+grupo_balas=pygame.sprite.Group()
 
 #Definir las variables del movimiento del juego
 mover_arriba=False
@@ -73,13 +80,23 @@ while run==True:
     jugador.update()
 
     #Actualiza el estado del arma
-    pistola.update(jugador)
+    bala=pistola.update(jugador)
+    if bala:
+        grupo_balas.add(bala)
+
+    for bala in grupo_balas:
+        bala.update()
 
     #Dibujar al jugador
     jugador.dibujar(ventana)
 
     #dibujar el arma
     pistola.dibujar(ventana)
+
+    #dibujar balas
+
+    for bala in grupo_balas:
+        bala.dibujar(ventana)
 
     for event in pygame.event.get():
         #Para cerrar el juego
