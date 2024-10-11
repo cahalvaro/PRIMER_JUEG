@@ -11,7 +11,7 @@ class Personaje():
         #Aqui se almacena la hora acutual (en milisegundos desde que se inicio pygame)
         self.update_time=pygame.time.get_ticks()
         self.image=animaciones[self.frame_index]
-        self.forma=pygame.Rect(0, 0, Constantes.ANCHO_PERSONAJE, Constantes.ALTO_PERSONAJE)
+        self.forma=self.forma=self.image.get_rect()
         self.forma.center=(x,y)
     
     def movimiento(self, delta_x, delta_y):

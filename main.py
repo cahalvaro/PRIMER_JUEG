@@ -1,6 +1,7 @@
 import pygame
 import Constantes
 from personajes import Personaje
+from weapon import Weapon
 
 pygame.init()
 ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA,Constantes.ALTO_VENTANA))
@@ -12,18 +13,26 @@ def escalar_img(image, scale):
     nueva_imagen=pygame.transform.scale(image, (w*scale, h*scale))
     return nueva_imagen
 
+#importar imagenes 
+
+#personaje
+
 animaciones=[]
 for i in range (7):
-    img=pygame.image.load(f"assets//images//characters//player//Player_{i}.png")
+    img=pygame.image.load(f"assets//images//characters//player//Player_{i}.png").convert_alpha()
     img =escalar_img(img, Constantes.SCALA_PERSONAJE)
     animaciones.append(img)
 
+#Arma
+imagen_pistola=pygame.image.load(f"assets//images//weapons//gun.png").convert_alpha()
+imagen_pistola=escalar_img(imagen_pistola, Constantes.SCALA_ARMA)
 
+
+#crear un jugador de la clase personaje
 jugador=Personaje(50,50,animaciones)
 
-
-
-
+#Crear un arma de la clase weapon
+pistola=Weapon(imagen_pistola)
 
 #Definir las variables del movimiento del juego
 mover_arriba=False
@@ -59,11 +68,19 @@ while run==True:
     
     #Mover al jugador
     jugador.movimiento(delta_x, delta_y)
-
+    
+    #Actualiza estado del jugador 
     jugador.update()
 
+    #Actualiza el estado del arma
+    pistola.update(jugador)
 
+    #Dibujar al jugador
     jugador.dibujar(ventana)
+
+    #dibujar el arma
+    pistola.dibujar(ventana)
+
     for event in pygame.event.get():
         #Para cerrar el juego
         if event.type==pygame.QUIT:
