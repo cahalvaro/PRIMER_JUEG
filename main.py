@@ -2,16 +2,31 @@ import pygame
 import Constantes
 from personajes import Personaje
 from weapon import Weapon
+import os
 
-pygame.init()
-ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA,Constantes.ALTO_VENTANA))
-pygame.display.set_caption("Mi primer juego")
-
+#Funciones 
+#Escalar imagenes 
 def escalar_img(image, scale):
     w=image.get_width()
     h=image.get_height()
     nueva_imagen=pygame.transform.scale(image, (w*scale, h*scale))
     return nueva_imagen
+
+#Funcion para contar elementos 
+def contar_elementos(directorio):
+    return len(os.listdir(directorio))
+
+#Funcion listar nombres elementos 
+def nombre_carpetas(directorio):
+    return os.listdir(directorio)
+
+
+
+pygame.init()
+ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA,Constantes.ALTO_VENTANA))
+pygame.display.set_caption("Mi primer juego")
+
+
 
 #importar imagenes 
 
@@ -23,6 +38,20 @@ for i in range (7):
     img =escalar_img(img, Constantes.SCALA_PERSONAJE)
     animaciones.append(img)
 
+#enemigos 
+directorio_enemigos="assets\images\characters\enemies"
+tipo_enemigos=nombre_carpetas(directorio_enemigos)
+animacion_enemigos=[]
+for eni in tipo_enemigos:
+    lista_temp=[]
+    ruta_temp=f"assets\images\characters\enemies\{eni}"
+    num_animaciones=contar_elementos(ruta_temp)
+    for i in range(num_animaciones):
+        img_enemigo=pygame.image.load(f"{ruta_temp}\{eni}_{i}.png").convert_alpha()
+        img_enemigo=escalar_img(img_enemigo, Constantes.SCALA_ENEMIGOS)
+        lista_temp.append(img_enemigo)
+    animacion_enemigos.append(lista_temp)
+
 #Arma
 imagen_pistola=pygame.image.load(f"assets//images//weapons//gun.png").convert_alpha()
 imagen_pistola=escalar_img(imagen_pistola, Constantes.SCALA_ARMA)
@@ -33,7 +62,20 @@ imagen_balas=escalar_img(imagen_balas, Constantes.SCALA_ARMA)
 
 
 #crear un jugador de la clase personaje
-jugador=Personaje(50,50,animaciones)
+jugador=Personaje(50,50,animaciones,100)
+
+#crear un enemigo de la calse personaje
+goblin=Personaje(400, 300, animacion_enemigos[0],100)
+honguito=Personaje(200, 200, animacion_enemigos[1],100)
+goblin_2=Personaje(100, 250, animacion_enemigos[0],100)
+honguito_2=Personaje(350, 350, animacion_enemigos[1],100)
+
+#Crear una lista de enemigos
+lista_enemigos=[]
+lista_enemigos.append(goblin)
+lista_enemigos.append(goblin_2)
+lista_enemigos.append(honguito)
+lista_enemigos.append(honguito_2)
 
 #Crear un arma de la clase weapon
 pistola=Weapon(imagen_pistola, imagen_balas)
@@ -79,16 +121,26 @@ while run==True:
     #Actualiza estado del jugador 
     jugador.update()
 
+    #Actualiza estado del enemigo
+    for ene in lista_enemigos:
+        ene.update()
+
+
     #Actualiza el estado del arma
     bala=pistola.update(jugador)
     if bala:
         grupo_balas.add(bala)
 
     for bala in grupo_balas:
-        bala.update()
+        bala.update(lista_enemigos)
+
 
     #Dibujar al jugador
     jugador.dibujar(ventana)
+
+    #Dibujar enemigo
+    for ene in lista_enemigos:
+        ene.dibujar(ventana)
 
     #dibujar el arma
     pistola.dibujar(ventana)
