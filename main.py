@@ -2,6 +2,8 @@ import pygame
 import Constantes
 from personajes import Personaje
 from weapon import Weapon
+from textos import DamageText
+from items import Item
 import os
 
 #Funciones 
@@ -26,9 +28,21 @@ pygame.init()
 ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA,Constantes.ALTO_VENTANA))
 pygame.display.set_caption("Mi primer juego")
 
+#fuentes
+font=pygame.font.Font("assets//fonts//mago3.ttf", 25)
 
 
-#importar imagenes 
+
+#importar imagenes
+ 
+#Energia
+corazon_vacio=pygame.image.load("assets//images//items//heart_empty.png").convert_alpha()
+corazon_vacio=escalar_img(corazon_vacio, Constantes.SCALA_CORAZON)
+corazon_mitad=pygame.image.load("assets//images//items//heart_half.png").convert_alpha()
+corazon_mitad=escalar_img(corazon_mitad, Constantes.SCALA_CORAZON)
+corazon_lleno=pygame.image.load("assets//images//items//heart_full.png").convert_alpha()
+corazon_lleno=escalar_img(corazon_lleno, Constantes.SCALA_CORAZON)
+
 
 #personaje
 
@@ -39,15 +53,15 @@ for i in range (7):
     animaciones.append(img)
 
 #enemigos 
-directorio_enemigos="assets\images\characters\enemies"
+directorio_enemigos="assets//images//characters//enemies"
 tipo_enemigos=nombre_carpetas(directorio_enemigos)
 animacion_enemigos=[]
 for eni in tipo_enemigos:
     lista_temp=[]
-    ruta_temp=f"assets\images\characters\enemies\{eni}"
+    ruta_temp=f"assets//images//characters//enemies//{eni}"
     num_animaciones=contar_elementos(ruta_temp)
     for i in range(num_animaciones):
-        img_enemigo=pygame.image.load(f"{ruta_temp}\{eni}_{i}.png").convert_alpha()
+        img_enemigo=pygame.image.load(f"{ruta_temp}//{eni}_{i}.png").convert_alpha()
         img_enemigo=escalar_img(img_enemigo, Constantes.SCALA_ENEMIGOS)
         lista_temp.append(img_enemigo)
     animacion_enemigos.append(lista_temp)
@@ -60,9 +74,31 @@ imagen_pistola=escalar_img(imagen_pistola, Constantes.SCALA_ARMA)
 imagen_balas=pygame.image.load(f"assets//images//weapons//bullet.png").convert_alpha()
 imagen_balas=escalar_img(imagen_balas, Constantes.SCALA_ARMA)
 
+#Cargar imagenes de los items
+posion_roja=pygame.image.load("assets//images//items//potion.png")
+posion_roja=escalar_img(posion_roja, 0.035)
+
+coin_images=[]
+ruta_img="assets//images//items//coin"
+num_coin_images=contar_elementos(ruta_img)
+for i in range(num_coin_images):
+    img=pygame.image.load(f"assets//images//items//coin//coin_{i+1}.png")
+    img=escalar_img(img, 0.03)
+    coin_images.append(img)
+
+def vida_jugador():
+    c_mitad_dibujado=False
+    for i in range(5):
+        if jugador.energia>=((i+1)*20):
+            ventana.blit(corazon_lleno, (5+i*50, 5))
+        elif jugador.energia % 20 > 0 and c_mitad_dibujado==False:
+            ventana.blit(corazon_mitad, (5+i*50, 5))
+            c_mitad_dibujado=True
+        else:
+            ventana.blit(corazon_vacio, (5+i*50, 5))
 
 #crear un jugador de la clase personaje
-jugador=Personaje(50,50,animaciones,100)
+jugador=Personaje(50,50,animaciones,20)
 
 #crear un enemigo de la calse personaje
 goblin=Personaje(400, 300, animacion_enemigos[0],100)
@@ -81,7 +117,16 @@ lista_enemigos.append(honguito_2)
 pistola=Weapon(imagen_pistola, imagen_balas)
 
 #Crear un grupo de sprites
+grupo_damage_text=pygame.sprite.Group()
 grupo_balas=pygame.sprite.Group()
+grupo_items=pygame.sprite.Group()
+
+coin=Item(350, 25, 0, coin_images)
+potion=Item(380, 55, 1, [posion_roja])
+
+grupo_items.add(coin)
+grupo_items.add(potion)
+
 
 #Definir las variables del movimiento del juego
 mover_arriba=False
@@ -132,7 +177,16 @@ while run==True:
         grupo_balas.add(bala)
 
     for bala in grupo_balas:
-        bala.update(lista_enemigos)
+        damage, pos_damage=bala.update(lista_enemigos)
+        if damage:
+            damage_text=DamageText(pos_damage.centerx, pos_damage.centery, str(damage), font, Constantes.ROJO)
+            grupo_damage_text.add(damage_text)
+
+    #Actualiza el daño
+    grupo_damage_text.update()
+
+    #Actualizar items
+    grupo_items.update()
 
 
     #Dibujar al jugador
@@ -149,6 +203,15 @@ while run==True:
 
     for bala in grupo_balas:
         bala.dibujar(ventana)
+
+    #dibujar los corazones 
+    vida_jugador()
+
+    #dibujar textos
+    grupo_damage_text.draw(ventana)
+
+    #dibujar items
+    grupo_items.draw(ventana)
 
     for event in pygame.event.get():
         #Para cerrar el juego
