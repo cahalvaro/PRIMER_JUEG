@@ -4,6 +4,7 @@ from personajes import Personaje
 from weapon import Weapon
 from textos import DamageText
 from items import Item
+from mundo import Mundo
 import os
 
 #Funciones 
@@ -74,6 +75,13 @@ imagen_pistola=escalar_img(imagen_pistola, Constantes.SCALA_ARMA)
 imagen_balas=pygame.image.load(f"assets//images//weapons//bullet.png").convert_alpha()
 imagen_balas=escalar_img(imagen_balas, Constantes.SCALA_ARMA)
 
+#Cargar imagenes del mundo
+tile_list = []
+for x in range(Constantes.TILE_TYPES):
+    tile_image=pygame.image.load(f"assets//images//tiles//tile ({x+1}).png")
+    tile_image=pygame.transform.scale(tile_image, (Constantes.TILE_SIZE, Constantes.TILE_SIZE))
+    tile_list.append(tile_image)
+
 #Cargar imagenes de los items
 posion_roja=pygame.image.load("assets//images//items//potion.png")
 posion_roja=escalar_img(posion_roja, 0.035)
@@ -100,6 +108,30 @@ def vida_jugador():
             c_mitad_dibujado=True
         else:
             ventana.blit(corazon_vacio, (5+i*50, 5))
+
+world_data=[
+    [0,0,0,0,0,11],
+    [16,3,3,3,3,11],
+    [16,3,3,3,3,11],
+    [16,3,3,3,3,11],
+    [16,3,3,3,3,11],
+    [16,3,3,3,3,11],
+    [16,3,3,3,3,11],
+    [16,3,3,3,3,11],
+    [16,3,3,3,3,11],
+    [16,1,1,1,1,11]
+]
+
+world=Mundo()
+world.process_data(world_data,tile_list)
+
+
+def dibujar_grid():
+    for x in range(30):
+        pygame.draw.line(ventana, Constantes.BLANCO, (x*Constantes.TILE_SIZE,0), (x*Constantes.TILE_SIZE, Constantes.ALTO_VENTANA))
+        pygame.draw.line(ventana, Constantes.BLANCO, (0, x*Constantes.TILE_SIZE), (Constantes.ANCHO_VENTANA,x*Constantes.TILE_SIZE))
+
+
 
 #crear un jugador de la clase personaje
 jugador=Personaje(50,50,animaciones,20)
@@ -148,6 +180,9 @@ while run==True:
 
     ventana.fill(Constantes.COLOR_BG)
 
+
+    dibujar_grid()
+
     #Calcular el movimiento del jugador
     delta_x=0
     delta_y=0
@@ -191,6 +226,10 @@ while run==True:
 
     #Actualizar items
     grupo_items.update(jugador)
+
+
+    #dibujar mundo
+    world.draw(ventana)
 
 
     #Dibujar al jugador
