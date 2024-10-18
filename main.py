@@ -30,6 +30,10 @@ pygame.init()
 ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA,Constantes.ALTO_VENTANA))
 pygame.display.set_caption("Mi primer juego")
 
+#Variables 
+posicion_pantalla=[0, 0]
+nivel=1
+
 #fuentes
 font=pygame.font.Font("assets//fonts//mago3.ttf", 25)
 
@@ -95,6 +99,8 @@ for i in range(num_coin_images):
     img=escalar_img(img, 0.03)
     coin_images.append(img)
 
+item_imagenes=[coin_images, [posion_roja]]
+
 def dibujar_texto(texto, fuente, color, x, y):
     img=fuente.render(texto, True, color)
     ventana.blit(img, (x,y))
@@ -125,7 +131,7 @@ with open("niveles//nivel_test.csv", newline='') as csvfile:
             world_data[x][y]=int(columna)
 
 world=Mundo()
-world.process_data(world_data,tile_list)
+world.process_data(world_data,tile_list, item_imagenes, animacion_enemigos)
 
 
 def dibujar_grid():
@@ -136,20 +142,12 @@ def dibujar_grid():
 
 
 #crear un jugador de la clase personaje
-jugador=Personaje(50,50,animaciones,20)
-
-#crear un enemigo de la calse personaje
-goblin=Personaje(400, 300, animacion_enemigos[0],100)
-honguito=Personaje(200, 200, animacion_enemigos[1],100)
-goblin_2=Personaje(100, 250, animacion_enemigos[0],100)
-honguito_2=Personaje(350, 350, animacion_enemigos[1],100)
+jugador=Personaje(50,50,animaciones,20,1)
 
 #Crear una lista de enemigos
 lista_enemigos=[]
-lista_enemigos.append(goblin)
-lista_enemigos.append(goblin_2)
-lista_enemigos.append(honguito)
-lista_enemigos.append(honguito_2)
+for ene in world.lista_enemigo:
+    lista_enemigos.append(ene)
 
 #Crear un arma de la clase weapon
 pistola=Weapon(imagen_pistola, imagen_balas)
@@ -159,11 +157,9 @@ grupo_damage_text=pygame.sprite.Group()
 grupo_balas=pygame.sprite.Group()
 grupo_items=pygame.sprite.Group()
 
-coin=Item(350, 25, 0, coin_images)
-potion=Item(380, 55, 1, [posion_roja])
-
-grupo_items.add(coin)
-grupo_items.add(potion)
+#añadir items desde la data del nivel
+for item in world.lista_item:
+    grupo_items.add(item)
 
 
 #Definir las variables del movimiento del juego
@@ -202,7 +198,10 @@ while run==True:
         delta_y=Constantes.VELOCIDAD
     
     #Mover al jugador
-    jugador.movimiento(delta_x, delta_y)
+    posicion_pantalla=jugador.movimiento(delta_x, delta_y)
+
+    #Actualizar el mapa
+    world.update(posicion_pantalla)
     
     #Actualiza estado del jugador 
     jugador.update()
@@ -224,10 +223,10 @@ while run==True:
             grupo_damage_text.add(damage_text)
 
     #Actualiza el daño
-    grupo_damage_text.update()
+    grupo_damage_text.update(posicion_pantalla)
 
     #Actualizar items
-    grupo_items.update(jugador)
+    grupo_items.update(posicion_pantalla, jugador)
 
 
     #dibujar mundo
@@ -239,6 +238,7 @@ while run==True:
 
     #Dibujar enemigo
     for ene in lista_enemigos:
+        ene.enemigos(posicion_pantalla)
         ene.dibujar(ventana)
 
     #dibujar el arma
@@ -255,7 +255,8 @@ while run==True:
     #dibujar textos
     grupo_damage_text.draw(ventana)
     dibujar_texto(f"Score: {jugador.score}", font, (255,255,0), 700, 5)
-
+    #nivel
+    dibujar_texto(f"Nivel:"+str(nivel), font, Constantes.BLANCO,Constantes.ANCHO_VENTANA/2, 5)
     #dibujar items
     grupo_items.draw(ventana)
 
