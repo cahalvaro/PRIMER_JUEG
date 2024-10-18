@@ -6,6 +6,7 @@ from textos import DamageText
 from items import Item
 from mundo import Mundo
 import os
+import csv
 
 #Funciones 
 #Escalar imagenes 
@@ -109,18 +110,19 @@ def vida_jugador():
         else:
             ventana.blit(corazon_vacio, (5+i*50, 5))
 
-world_data=[
-    [0,0,0,0,0,11],
-    [16,3,3,3,3,11],
-    [16,3,3,3,3,11],
-    [16,3,3,3,3,11],
-    [16,3,3,3,3,11],
-    [16,3,3,3,3,11],
-    [16,3,3,3,3,11],
-    [16,3,3,3,3,11],
-    [16,3,3,3,3,11],
-    [16,1,1,1,1,11]
-]
+world_data=[]
+
+
+for fila in range(Constantes.FILAS):
+    filas=[5]*Constantes.COLUMNAS
+    world_data.append(filas)
+
+#Cargar el archivo con el nivel
+with open("niveles//nivel_test.csv", newline='') as csvfile:
+    reader=csv.reader(csvfile, delimiter=',')
+    for x, fila in enumerate(reader):
+        for y, columna in enumerate(fila):
+            world_data[x][y]=int(columna)
 
 world=Mundo()
 world.process_data(world_data,tile_list)
