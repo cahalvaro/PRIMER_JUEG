@@ -142,7 +142,7 @@ def dibujar_grid():
 
 
 #crear un jugador de la clase personaje
-jugador=Personaje(50,50,animaciones,20,1)
+jugador=Personaje(50,60,animaciones,20,1)
 
 #Crear una lista de enemigos
 lista_enemigos=[]
@@ -198,7 +198,7 @@ while run==True:
         delta_y=Constantes.VELOCIDAD
     
     #Mover al jugador
-    posicion_pantalla=jugador.movimiento(delta_x, delta_y)
+    posicion_pantalla=jugador.movimiento(delta_x, delta_y, world.obstaculos_tiles)
 
     #Actualizar el mapa
     world.update(posicion_pantalla)
@@ -238,7 +238,7 @@ while run==True:
 
     #Dibujar enemigo
     for ene in lista_enemigos:
-        ene.enemigos(posicion_pantalla)
+        ene.enemigos(jugador, world.obstaculos_tiles, posicion_pantalla)
         ene.dibujar(ventana)
 
     #dibujar el arma

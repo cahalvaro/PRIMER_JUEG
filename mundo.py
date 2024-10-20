@@ -2,7 +2,7 @@ import Constantes
 from items import Item
 from personajes import Personaje
 
-obstaculos=[0,1,2,3,4,5,10,15,20,25,30,35,40,45,50,55,66,67,36,37]
+obstaculos=[0,1,2,3,4,10,15,20,25,30,35,40,41,42,43,44,45,50,51,52,53,54,55,66,67,36,37,5]
 
 class Mundo():
     def __init__(self):
