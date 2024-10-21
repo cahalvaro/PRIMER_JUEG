@@ -27,7 +27,8 @@ def nombre_carpetas(directorio):
 
 
 pygame.init()
-ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA,Constantes.ALTO_VENTANA))
+pygame.mixer.init()
+ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA, Constantes.ALTO_VENTANA))
 pygame.display.set_caption("Mi primer juego")
 
 #Variables 
@@ -36,11 +37,32 @@ nivel=1
 
 #fuentes
 font=pygame.font.Font("assets//fonts//mago3.ttf", 25)
+font_game_over=pygame.font.Font("assets//fonts//mago3.ttf", 100)
+font_reinicio=pygame.font.Font("assets//fonts//mago3.ttf", 30)
+font_inicio=pygame.font.Font("assets//fonts//mago3.ttf", 30)
+font_titulo=pygame.font.Font("assets//fonts//mago3.ttf", 75)
 
 
+game_over_text=font_game_over.render('Game Over', True, Constantes.BLANCO)
+text_boton_reinicio=font_reinicio.render("Reiniciar", True, Constantes.NEGRO)
 
-#importar imagenes
- 
+#Botones de inicio
+boton_jugar=pygame.Rect(Constantes.ANCHO_VENTANA/2-100, Constantes.ALTO_VENTANA/2-50, 200, 50)
+boton_salir=pygame.Rect(Constantes.ANCHO_VENTANA/2-100, Constantes.ALTO_VENTANA/2+50, 200, 50)
+texto_boton_jugar=font_inicio.render("Jugar", True,Constantes.NEGRO)
+texto_boton_salir=font_inicio.render("Salir", True,Constantes.BLANCO)
+
+def pantalla_inicio():
+    ventana.fill(Constantes.MORADO)
+    dibujar_texto("Mi primer juego", font_titulo, Constantes.BLANCO, Constantes.ANCHO_VENTANA/2-200, Constantes.ALTO_VENTANA/2-200)
+
+    pygame.draw.rect(ventana, Constantes.AMARILLO, boton_jugar)
+    pygame.draw.rect(ventana, Constantes.ROJO, boton_salir)
+    ventana.blit(texto_boton_jugar, (boton_jugar.x+50, boton_jugar.y+10))
+    ventana.blit(texto_boton_salir, (boton_salir.x+50, boton_salir.y+10))
+    pygame.display.update()
+
+#importar imagenes 
 #Energia
 corazon_vacio=pygame.image.load("assets//images//items//heart_empty.png").convert_alpha()
 corazon_vacio=escalar_img(corazon_vacio, Constantes.SCALA_CORAZON)
@@ -116,6 +138,19 @@ def vida_jugador():
         else:
             ventana.blit(corazon_vacio, (5+i*50, 5))
 
+def resetear_mundo():
+    grupo_damage_text.empty()
+    grupo_balas.empty()
+    grupo_items.empty()
+
+    #Crear lista de tiles vacia 
+    data=[]
+    for fila in range(Constantes.FILAS):
+        filas=[2]*Constantes.COLUMNAS
+        data.append(filas)
+    return data
+
+
 world_data=[]
 
 
@@ -124,7 +159,7 @@ for fila in range(Constantes.FILAS):
     world_data.append(filas)
 
 #Cargar el archivo con el nivel
-with open("niveles//nivel_test.csv", newline='') as csvfile:
+with open("niveles//nivel_1.csv", newline='') as csvfile:
     reader=csv.reader(csvfile, delimiter=',')
     for x, fila in enumerate(reader):
         for y, columna in enumerate(fila):
@@ -142,7 +177,7 @@ def dibujar_grid():
 
 
 #crear un jugador de la clase personaje
-jugador=Personaje(50,60,animaciones,20,1)
+jugador=Personaje(100,50,animaciones,100,1)
 
 #Crear una lista de enemigos
 lista_enemigos=[]
@@ -171,120 +206,203 @@ mover_derecha=False
 #Controlar el frame rate
 reloj=pygame.time.Clock()
 
+#Boton de reinicio
+boton_reinicio=pygame.Rect(Constantes.ALTO_VENTANA/2, Constantes.ANCHO_VENTANA/2,200,50)
+
+pygame.mixer.music.load("assets//sounds//cancion.ogg")
+pygame.mixer.music.play(-1)
+
+sonido_disparo=pygame.mixer.Sound("assets//sounds//disparo.mp3")
+
+
+mostrar_inicio =True
 run=True
 while run==True:
-    #Que vaya a 60 fps
-    reloj.tick(Constantes.FPS)
+    if mostrar_inicio:
+        pantalla_inicio()
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                run =False
+            if event.type==pygame.MOUSEBUTTONDOWN:
+                if boton_jugar.collidepoint(event.pos):
+                    mostrar_inicio=False
+                if boton_salir.collidepoint(event.pos):
+                    run =False
+    else:
+        #Que vaya a 60 fps
+        reloj.tick(Constantes.FPS)
+        ventana.fill(Constantes.MORADO)
+        
+        if jugador.vivo==True:
 
-    ventana.fill(Constantes.COLOR_BG)
+            #Calcular el movimiento del jugador
+            delta_x=0
+            delta_y=0
 
+            if mover_derecha==True:
+                delta_x=Constantes.VELOCIDAD
 
-    dibujar_grid()
+            if mover_izquierda==True:
+                delta_x=-Constantes.VELOCIDAD
+            
+            if mover_arriba==True:
+                delta_y=-Constantes.VELOCIDAD
 
-    #Calcular el movimiento del jugador
-    delta_x=0
-    delta_y=0
+            if mover_abajo==True:
+                delta_y=Constantes.VELOCIDAD
+            
+            #Mover al jugador
+            posicion_pantalla, nivel_completado=jugador.movimiento(delta_x, delta_y, world.obstaculos_tiles,world.exit_tile)
 
-    if mover_derecha==True:
-        delta_x=Constantes.VELOCIDAD
+            #Actualizar el mapa
+            world.update(posicion_pantalla)
+            
+            #Actualiza estado del jugador 
+            jugador.update()
 
-    if mover_izquierda==True:
-        delta_x=-Constantes.VELOCIDAD
-    
-    if mover_arriba==True:
-        delta_y=-Constantes.VELOCIDAD
-
-    if mover_abajo==True:
-        delta_y=Constantes.VELOCIDAD
-    
-    #Mover al jugador
-    posicion_pantalla=jugador.movimiento(delta_x, delta_y, world.obstaculos_tiles)
-
-    #Actualizar el mapa
-    world.update(posicion_pantalla)
-    
-    #Actualiza estado del jugador 
-    jugador.update()
-
-    #Actualiza estado del enemigo
-    for ene in lista_enemigos:
-        ene.update()
-
-
-    #Actualiza el estado del arma
-    bala=pistola.update(jugador)
-    if bala:
-        grupo_balas.add(bala)
-
-    for bala in grupo_balas:
-        damage, pos_damage=bala.update(lista_enemigos)
-        if damage:
-            damage_text=DamageText(pos_damage.centerx, pos_damage.centery, str(damage), font, Constantes.ROJO)
-            grupo_damage_text.add(damage_text)
-
-    #Actualiza el daño
-    grupo_damage_text.update(posicion_pantalla)
-
-    #Actualizar items
-    grupo_items.update(posicion_pantalla, jugador)
+            #Actualiza estado del enemigo
+            for ene in lista_enemigos:
+                ene.update()
 
 
-    #dibujar mundo
-    world.draw(ventana)
+            #Actualiza el estado del arma
+            bala=pistola.update(jugador)
+            if bala:
+                grupo_balas.add(bala)
+                sonido_disparo.play()
+
+            for bala in grupo_balas:
+                damage, pos_damage=bala.update(lista_enemigos,world.obstaculos_tiles)
+                if damage:
+                    damage_text=DamageText(pos_damage.centerx, pos_damage.centery, str(damage), font, Constantes.ROJO)
+                    grupo_damage_text.add(damage_text)
+
+            #Actualiza el daño
+            grupo_damage_text.update(posicion_pantalla)
+
+            #Actualizar items
+            grupo_items.update(posicion_pantalla, jugador)
 
 
-    #Dibujar al jugador
-    jugador.dibujar(ventana)
+        #dibujar mundo
+        world.draw(ventana)
 
-    #Dibujar enemigo
-    for ene in lista_enemigos:
-        ene.enemigos(jugador, world.obstaculos_tiles, posicion_pantalla)
-        ene.dibujar(ventana)
 
-    #dibujar el arma
-    pistola.dibujar(ventana)
+        #Dibujar al jugador
+        jugador.dibujar(ventana)
 
-    #dibujar balas
+        #Dibujar enemigo
+        for ene in lista_enemigos:
+            if ene.energia==0:
+                lista_enemigos.remove(ene)
+            if ene.energia>0:
+                ene.enemigos(jugador, world.obstaculos_tiles, posicion_pantalla, world.exit_tile)
+                ene.dibujar(ventana)
 
-    for bala in grupo_balas:
-        bala.dibujar(ventana)
+        #dibujar el arma
+        pistola.dibujar(ventana)
 
-    #dibujar los corazones 
-    vida_jugador()
+        #dibujar balas
 
-    #dibujar textos
-    grupo_damage_text.draw(ventana)
-    dibujar_texto(f"Score: {jugador.score}", font, (255,255,0), 700, 5)
-    #nivel
-    dibujar_texto(f"Nivel:"+str(nivel), font, Constantes.BLANCO,Constantes.ANCHO_VENTANA/2, 5)
-    #dibujar items
-    grupo_items.draw(ventana)
+        for bala in grupo_balas:
+            bala.dibujar(ventana)
 
-    for event in pygame.event.get():
-        #Para cerrar el juego
-        if event.type==pygame.QUIT:
-            run=False
-    
-        if event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_a:
-                mover_izquierda=True
-            if event.key==pygame.K_d:
-                mover_derecha=True
-            if event.key==pygame.K_w:
-                mover_arriba=True
-            if event.key==pygame.K_s:
-                mover_abajo=True
+        #dibujar los corazones 
+        vida_jugador()
 
-        if event.type==pygame.KEYUP:
-            if event.key==pygame.K_a:
-                mover_izquierda=False
-            if event.key==pygame.K_d:
-                mover_derecha=False
-            if event.key==pygame.K_w:
-                mover_arriba=False
-            if event.key==pygame.K_s:
-                mover_abajo=False
+        #dibujar textos
+        grupo_damage_text.draw(ventana)
+        dibujar_texto(f"Score: {jugador.score}", font, (255,255,0), 700, 5)
+        #nivel
+        dibujar_texto(f"Nivel:"+str(nivel), font, Constantes.BLANCO,Constantes.ANCHO_VENTANA/2, 5)
+        #dibujar items
+        grupo_items.draw(ventana)
 
-    pygame.display.update()
+        #chequear si el nivel esta completado
+        if nivel_completado==True:
+            if nivel < Constantes.NIVEL_MAXIMO:
+
+                nivel+=1
+                world_data=resetear_mundo()
+                #Cargar el archivo con el nivel
+                with open(f"niveles//nivel_{nivel}.csv", newline='') as csvfile:
+                    reader=csv.reader(csvfile, delimiter=',')
+                    for x, fila in enumerate(reader):
+                        for y, columna in enumerate(fila):
+                            world_data[x][y]=int(columna)
+
+                world=Mundo()
+                world.process_data(world_data,tile_list, item_imagenes, animacion_enemigos)
+                jugador.actualizar_coordenadas(Constantes.COORDENADAS[str(nivel)])
+
+                #Crear una lista de enemigos
+                lista_enemigos=[]
+                for ene in world.lista_enemigo:
+                    lista_enemigos.append(ene)
+
+                #añadir items desde la data del nivel
+                for item in world.lista_item:
+                    grupo_items.add(item)
+
+        if jugador.vivo==False:
+            ventana.fill(Constantes.ROJO_OSCURO)
+            text_rect=game_over_text.get_rect(center=(Constantes.ANCHO_VENTANA/2,Constantes.ALTO_VENTANA/2))
+            ventana.blit(game_over_text, text_rect)
+            pygame.draw.rect(ventana, Constantes.AMARILLO, boton_reinicio)
+            ventana.blit(text_boton_reinicio, (boton_reinicio.x+50, boton_reinicio.y+10))
+
+
+        for event in pygame.event.get():
+            #Para cerrar el juego
+            if event.type==pygame.QUIT:
+                run=False
+        
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_a:
+                    mover_izquierda=True
+                if event.key==pygame.K_d:
+                    mover_derecha=True
+                if event.key==pygame.K_w:
+                    mover_arriba=True
+                if event.key==pygame.K_s:
+                    mover_abajo=True
+                if event.key==pygame.K_e:
+                    if world.cambiar_puerta(jugador, tile_list):
+                        print("Puerta Cambiada")
+
+            if event.type==pygame.KEYUP:
+                if event.key==pygame.K_a:
+                    mover_izquierda=False
+                if event.key==pygame.K_d:
+                    mover_derecha=False
+                if event.key==pygame.K_w:
+                    mover_arriba=False
+                if event.key==pygame.K_s:
+                    mover_abajo=False
+
+            if event.type==pygame.MOUSEBUTTONDOWN:
+                if boton_reinicio.collidepoint(event.pos) and not jugador.vivo:
+                    jugador.vivo=True
+                    jugador.energia=100
+                    jugador.score=0
+                    nivel=1
+                    world_data=resetear_mundo()
+                    with open(f"niveles//nivel_{nivel}.csv", newline="") as file:
+                        reader=csv.reader(file, delimiter=",")
+                        for x, fila in enumerate(reader):
+                            for y, columna in enumerate(fila):
+                                world_data[x][y]=int(columna)
+                    world=Mundo()
+                    world.process_data(world_data,tile_list, item_imagenes, animacion_enemigos)
+                    jugador.actualizar_coordenadas(Constantes.COORDENADAS[str(nivel)])
+                    for item in world.lista_item:
+                        grupo_items.add(item)
+                    #Crear una lista de enemigos
+                    lista_enemigos=[]
+                    for ene in world.lista_enemigo:
+                        lista_enemigos.append(ene)
+                    
+
+        pygame.display.update()
 
 pygame.quit()

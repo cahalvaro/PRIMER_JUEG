@@ -20,10 +20,14 @@ class Personaje():
         self.tipo=tipo
         self.golpe=False
         self.ultimo_golpe=pygame.time.get_ticks()
+    
+    def actualizar_coordenadas(self, tupla):
+        self.forma.center=(tupla[0],tupla[1])
 
     
-    def movimiento(self, delta_x, delta_y, obstaculos_tiles):
+    def movimiento(self, delta_x, delta_y, obstaculos_tiles,exit_tile):
         posicion_pantalla=[0, 0]
+        nivel_completado=False
         if delta_x< 0:
             self.flip=True
         if delta_x > 0:
@@ -48,13 +52,17 @@ class Personaje():
 
         #logica que solo aplica al jugador y no al enemigo
         if self.tipo==1:
+            #chequear colision con el tile de salida 
+            if exit_tile[1].colliderect(self.forma):
+                nivel_completado=True
+                print("Nivel Completado")
             #Actualizar la pantalla basado en la posicion del jugador
             #Mover la camara izquierda o derecha
             if self.forma.right>(Constantes.ANCHO_VENTANA - Constantes.LIMITE_PANTALLA):
                 posicion_pantalla[0]=(Constantes.ANCHO_VENTANA-Constantes.LIMITE_PANTALLA)-self.forma.right
                 self.forma.right = Constantes.ANCHO_VENTANA-Constantes.LIMITE_PANTALLA
             if self.forma.left<Constantes.LIMITE_PANTALLA:
-                posicion_pantalla[0]=Constantes.LIMITE_PANTALLA-self.forma.right
+                posicion_pantalla[0]=Constantes.LIMITE_PANTALLA-self.forma.left
                 self.forma.left=Constantes.LIMITE_PANTALLA
         
 
@@ -65,9 +73,9 @@ class Personaje():
             if self.forma.top<Constantes.LIMITE_PANTALLA:
                 posicion_pantalla[1]=Constantes.LIMITE_PANTALLA-self.forma.top
                 self.forma.top=Constantes.LIMITE_PANTALLA
-            return posicion_pantalla
+            return posicion_pantalla, nivel_completado
 
-    def enemigos(self,jugador, obstaculos_tiles, posicion_pantalla):
+    def enemigos(self,jugador, obstaculos_tiles, posicion_pantalla, exit_tile):
         ene_dx=0
         ene_dy=0
         #Reposicion de enemigos basado en la posicion de la pantalla o camara
@@ -87,7 +95,7 @@ class Personaje():
             if self.forma.centery < jugador.forma.centery:
                 ene_dy=Constantes.VELOCIDAD_ENEMIGO
         
-        self.movimiento(ene_dx, ene_dy, obstaculos_tiles)     
+        self.movimiento(ene_dx, ene_dy, obstaculos_tiles, exit_tile)     
 
         #Atacar al jugador 
         if distancia < Constantes.RANGO_ATAQUE and jugador.golpe==False:
@@ -119,6 +127,6 @@ class Personaje():
     def dibujar(self, interfaz):
         image_flip=pygame.transform.flip(self.image, self.flip,False)
         interfaz.blit(image_flip, self.forma)
-        pygame.draw.rect(interfaz,Constantes.COLOR_PERSONAJE, self.forma,1)
+        #pygame.draw.rect(interfaz,Constantes.COLOR_PERSONAJE, self.forma,1)
 
     

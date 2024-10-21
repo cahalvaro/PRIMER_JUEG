@@ -71,7 +71,7 @@ class Bullet(pygame.sprite.Sprite):
         self.delta_x=math.cos(math.radians(self.angulo))*Constantes.VELOCIDAD_BALA
         self.delta_y=-math.sin(math.radians(self.angulo))*Constantes.VELOCIDAD_BALA
 
-    def update(self, lista_enemigos):
+    def update(self, lista_enemigos, obstaculos_tiles):
         daño=0
         pos_daño=None
         self.rect.x+=self.delta_x
@@ -81,7 +81,7 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.right < 0 or self.rect.left > Constantes.ANCHO_VENTANA or self.rect.bottom < 0 or self.rect.top > Constantes.ALTO_VENTANA:
             self.kill()
 
-        #Verificar si hay colision
+        #Verificar si hay colision con los enemigos
         for enemigo in lista_enemigos:
             if enemigo.forma.colliderect(self.rect):
                 daño=15 +random.randint(-7,7)
@@ -89,6 +89,12 @@ class Bullet(pygame.sprite.Sprite):
                 enemigo.energia=enemigo.energia-daño
                 self.kill()
                 break
+        #Verificar si hay colision con las paredes 
+        for obs in obstaculos_tiles:
+            if obs[1].colliderect(self.rect):
+                self.kill()
+                break
+
         return daño, pos_daño
 
 
