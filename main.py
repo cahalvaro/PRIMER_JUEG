@@ -24,8 +24,6 @@ def contar_elementos(directorio):
 def nombre_carpetas(directorio):
     return os.listdir(directorio)
 
-
-
 pygame.init()
 pygame.mixer.init()
 ventana=pygame.display.set_mode((Constantes.ANCHO_VENTANA, Constantes.ALTO_VENTANA))
@@ -41,7 +39,6 @@ font_game_over=pygame.font.Font("assets//fonts//mago3.ttf", 100)
 font_reinicio=pygame.font.Font("assets//fonts//mago3.ttf", 30)
 font_inicio=pygame.font.Font("assets//fonts//mago3.ttf", 30)
 font_titulo=pygame.font.Font("assets//fonts//mago3.ttf", 75)
-
 
 game_over_text=font_game_over.render('Game Over', True, Constantes.BLANCO)
 text_boton_reinicio=font_reinicio.render("Reiniciar", True, Constantes.NEGRO)
@@ -70,7 +67,6 @@ corazon_mitad=pygame.image.load("assets//images//items//heart_half.png").convert
 corazon_mitad=escalar_img(corazon_mitad, Constantes.SCALA_CORAZON)
 corazon_lleno=pygame.image.load("assets//images//items//heart_full.png").convert_alpha()
 corazon_lleno=escalar_img(corazon_lleno, Constantes.SCALA_CORAZON)
-
 
 #personaje
 
@@ -150,9 +146,7 @@ def resetear_mundo():
         data.append(filas)
     return data
 
-
 world_data=[]
-
 
 for fila in range(Constantes.FILAS):
     filas=[5]*Constantes.COLUMNAS
@@ -175,7 +169,6 @@ def dibujar_grid():
         pygame.draw.line(ventana, Constantes.BLANCO, (0, x*Constantes.TILE_SIZE), (Constantes.ANCHO_VENTANA,x*Constantes.TILE_SIZE))
 
 
-
 #crear un jugador de la clase personaje
 jugador=Personaje(100,50,animaciones,100,1)
 
@@ -196,7 +189,6 @@ grupo_items=pygame.sprite.Group()
 for item in world.lista_item:
     grupo_items.add(item)
 
-
 #Definir las variables del movimiento del juego
 mover_arriba=False
 mover_abajo=False
@@ -213,7 +205,6 @@ pygame.mixer.music.load("assets//sounds//cancion.ogg")
 pygame.mixer.music.play(-1)
 
 sonido_disparo=pygame.mixer.Sound("assets//sounds//disparo.mp3")
-
 
 mostrar_inicio =True
 run=True
@@ -264,7 +255,6 @@ while run==True:
             for ene in lista_enemigos:
                 ene.update()
 
-
             #Actualiza el estado del arma
             bala=pistola.update(jugador)
             if bala:
@@ -283,10 +273,8 @@ while run==True:
             #Actualizar items
             grupo_items.update(posicion_pantalla, jugador)
 
-
         #dibujar mundo
         world.draw(ventana)
-
 
         #Dibujar al jugador
         jugador.dibujar(ventana)
@@ -351,7 +339,6 @@ while run==True:
             pygame.draw.rect(ventana, Constantes.AMARILLO, boton_reinicio)
             ventana.blit(text_boton_reinicio, (boton_reinicio.x+50, boton_reinicio.y+10))
 
-
         for event in pygame.event.get():
             #Para cerrar el juego
             if event.type==pygame.QUIT:
@@ -402,7 +389,6 @@ while run==True:
                     for ene in world.lista_enemigo:
                         lista_enemigos.append(ene)
                     
-
         pygame.display.update()
 
 pygame.quit()

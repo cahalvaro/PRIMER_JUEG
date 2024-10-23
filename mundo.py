@@ -3,9 +3,11 @@ import Constantes
 from items import Item
 from personajes import Personaje
 
+#lista de obstaculos
+#paredes
 obstaculos=[0,1,2,3,4,10,15,20,25,30,35,40,41,42,43,44,45,50,51,52,53,54,55,66,67,36,37,5]
+#puertas
 puerta_cerrada=[36,37,66,67]
-
 
 class Mundo():
     def __init__(self):

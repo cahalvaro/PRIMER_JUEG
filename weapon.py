@@ -97,7 +97,6 @@ class Bullet(pygame.sprite.Sprite):
 
         return daño, pos_daño
 
-
     def dibujar(self, interfaz):
         interfaz.blit(self.image, (self.rect.centerx, self.rect.centery - int(self.image.get_height()/2.5)))
 
