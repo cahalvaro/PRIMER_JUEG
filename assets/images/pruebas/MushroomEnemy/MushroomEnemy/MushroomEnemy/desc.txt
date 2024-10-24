@@ -1,0 +1,7 @@
+itch.io link:https://republic32.itch.io/mushroom-enemy
+Based off the mushroom enemy found here.(https://luizmelo.itch.io/monsters-creatures-fantasy)
+Contains an idle, hit flash, attack and die animation.
+Each sprite is 1000x600
+Free to use in any project commercial or otherwise.
+Do not resell. 
+Credit is not mandatory but appreciated. 
